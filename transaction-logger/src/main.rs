@@ -1,7 +1,5 @@
 use std::{
-    collections::HashMap,
-    fmt::Display,
-    io::{self, stdin},
+    collections::HashMap, fmt::Display, fs::{self, File, write}, io::{self, Write, stdin}
 };
 
 enum TransactionSide {
@@ -177,4 +175,39 @@ fn main() {
 ------------------"
         );
     }
+}
+
+fn save_transactions(transactions: &Vec<Transaction>, dollar_balance: f64) -> Result<(), io::Error> {
+    let mut contents = format!("{}\n", dollar_balance);
+    for t in transactions {
+        contents.push_str(&format!("{},{},{},{}\n", t.name, t.price, t.amount, t.side));
+    }
+    fs::write("transactions.txt", contents)
+}
+
+
+fn load_transactions(transactions: &mut Vec<Transaction>, dollar_balance: &mut f64) -> Result<(), io::Error> {
+   let contents = match fs::read_to_string("transactions.txt") {
+    Ok(c) => c,
+    Err(e) => return Err(e),
+   };
+
+   for (i, line) in contents.split("\n").enumerate() {
+    if i == 0 {
+    *dollar_balance = line.parse::<f64>().unwrap_or(100000.0);
+} else {
+    let parts: Vec<&str> = line.split(',').collect();
+    let transaction = Transaction {
+      name: parts[0].to_string(),
+    price: parts[1].parse::<f64>().unwrap_or(0.0),
+    amount: parts[2].parse::<f64>().unwrap_or(0.0),
+    side: match parts[3]{
+        "Buy" => TransactionSide::Buy,
+        _ => TransactionSide::Sell,
+    }
+    };
+    transactions.push(transaction);
+}
+}
+Ok(())
 }
