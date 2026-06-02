@@ -47,6 +47,8 @@ fn main() {
     let mut transaction: Vec<Transaction> = Vec::new();
     let mut dollar_balance: f64 = 100000.0;
 
+    load_transactions(&mut transaction, &mut dollar_balance).expect("Failed to load transactions");
+
     loop {
         let mut input = String::new();
         stdin().read_line(&mut input).expect("Failed to read");
@@ -154,6 +156,7 @@ fn main() {
             }
             5 => println!("{}", dollar_balance),
             6 => {
+                save_transactions(&transaction, dollar_balance).expect("Failed to save transactions");
                 println!("Thanks for trading with us");
                 break;
             }
